@@ -4,7 +4,7 @@ using namespace std;
 int main()
 {
     int n, umur, perlindungan = 3;
-    char pilihan, ulang;
+    char pilihan;
 
     cout << "=== GOBLET OF FIRE: TURNAMEN TRIWIZARD ===" << endl;
     cout << "Masukkan umur Anda: ";
@@ -67,7 +67,7 @@ int main()
     }
 
     bool danau = false;
-    while (!danau)
+    while (!danau) //not false = true, not true = false 
     {
         cout << "--- TUGAS 2: DANAU HITAM ---" << endl;
         int waktu = 10;
