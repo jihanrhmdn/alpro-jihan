@@ -3,52 +3,113 @@ using namespace std;
 
 int main()
 {
-    int kata;
-    cout << "Konsol teks mengalami interferensi kosmik.";
-    cout << "<< Verifikasi integritas data teks sebelum terlambat! ";
+    char ulang;
+    cout << "[TASK 2/3] REPAIR TEXT CONSOLE - Captain's Bridge" << endl;
+    cout << ">> Konsol teks mengalami interferensi kosmik." << endl;
+    cout << ">> Verifikasi integritas data teks sebelum terlambat!" << endl;
+    cout << endl;
 
-    cout << "[ Verifikasi Teks ]" << endl;
-    cout << "Masukkan Kalimat ke-1: ";
-    cin >> kata;
-    cout << "----------------------------------------" << endl;
-
-    
-    const int max = 100;
-    string kalimat;
-    char nama[max];
-
-    int panjang = 0;
-    int count = 0;
-
-    cin.getline(nama, max);
-    for (panjang; nama[panjang] != 0; panjang++)
+    do
     {
-        count++;
-    }
-    cout << panjang << endl;
+        cout << endl;
+        cout << "[ Verifikasi Teks ]" << endl;
+        cout << endl;
+        for (int k = 1; k <= 3; k++)
+        {
+            char kalimat[200];
+            cout << "Masukkan Kalimat ke-" << k << " : ";
+            cin.getline(kalimat, 200);
+            cout << "------------------------------------------------" << endl;
 
-    cout << "Hasil Kalimat ke-1: " << endl;
-    cout << "Jumlah Huruf: " << endl;
-    cout << "1. Asli: " << endl;
-    cout << "2. Inverse: " << endl;
-    cout << "3. Snap Awal-Akhir: " << endl;
-    cout << "4. Palindrome?: " << endl;
+            // hapus spasi
+            char bersih[200];
+            int idx = 0;
+            for (int i = 0; kalimat[i] != '\0'; i++)
+            {
+                if (kalimat[i] != ' ')
+                    bersih[idx++] = kalimat[i];
+            }
+            bersih[idx] = '\0';
 
-    cout << "----------------------------------------";
-    cout << "Hasil Kalimat ke-2: ";
-    cout << "Jumlah Huruf: ";
-    cout << "1. Asli: ";
-    cout << "2. Inverse: ";
-    cout << "3. Snap Awal-Akhir: ";
-    cout << "4. Palindrome?: ";
+            int panjang = idx; // jumlah huruf tanpa spasi
 
-    cout << "----------------------------------------";
-    cout << "Hasil Kalimat ke-3: ";
-    cout << "Jumlah Huruf: ";
-    cout << "1. Asli: ";
-    cout << "2. Inverse: ";
-    cout << "3. Snap Awal-Akhir: ";
-    cout << "4. Palindrome?: ";
+            cout << "Hasil untuk Kalimat ke-" << k << ":" << endl;
+            cout << "Jumlah Huruf         : " << panjang << endl;
+
+            // 1. ASLI
+            cout << "1. Asli              : ";
+            for (int i = 0; i < panjang; i++)
+            {
+                cout << bersih[i];
+                if (i < panjang - 1)
+                    cout << ", ";
+            }
+            cout << endl;
+
+            // 2. INVERSE
+            cout << "2. Inverse           : ";
+            for (int i = panjang - 1; i >= 0; i--)
+            {
+                cout << bersih[i];
+                if (i > 0)
+                    cout << ", ";
+            }
+            cout << endl;
+
+            // 3. SWAP AWAL-AKHIR
+            char swap_str[200];
+            for (int i = 0; i < panjang; i++)
+                swap_str[i] = bersih[i];
+            swap_str[panjang] = '\0';
+
+            // tukar karakter pertama dan terakhir
+            char temp = swap_str[0];
+            swap_str[0] = swap_str[panjang - 1];
+            swap_str[panjang - 1] = temp;
+
+            cout << "3. Swap Awal-Akhir   : ";
+            for (int i = 0; i < panjang; i++)
+                cout << swap_str[i];
+            cout << endl;
+
+            // 4. PALINDROME
+            bool palindrome = true;
+
+            if (panjang == 0)
+            {
+                palindrome = false;
+            }
+            else
+            {
+                for (int i = 0; i < panjang / 2; i++)
+                {
+                    if (bersih[i] != bersih[panjang - 1 - i])
+                    {
+                        palindrome = false;
+                        break;
+                    }
+                }
+            }
+
+            cout << "4. Palindrome?       : " << (palindrome ? "YES" : "NO") << endl;
+            cout << endl;
+        }
+
+        // opsi untuk ulang
+        cout << "============================================" << endl;
+        do
+        {
+            cout << "Verifikasi Teks Lain? (y/n): ";
+            cin >> ulang;
+            cin.ignore();
+            if (ulang != 'y' && ulang != 'n')
+                cout << "[!] Input tidak valid. Masukkan y atau n." << endl;
+        } while (ulang != 'y' && ulang != 'n');
+
+    } while (ulang == 'y');
+    cout << endl;
+    cout << ">> [TASK 2/3] COMPLETE - Text console back online." << endl;
+    cout << ">> Tekan ENTER untuk melanjutkan ke [ TASK 3 ]!";
 
     return 0;
 }
