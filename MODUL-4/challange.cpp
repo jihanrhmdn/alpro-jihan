@@ -37,7 +37,7 @@ void headerMenu1()
 
 void headerKalkulator()
 {
-    cout << "+==============================-+" << endl;
+    cout << "+==============================-" << endl;
     cout << "|           K4LKUL4T0R          |" << endl;
     cout << "X==============================/ " << endl;
 }
@@ -201,7 +201,9 @@ void kurangiStok(char nama[], int &stok)
     if (stok - kur < 1)
     {
         cout << "--------------------------------" << endl;
-        cout << "[Gagal] Stok tidak boleh kurang dari 1!" << endl;
+        cout << "[Gagal] Stok minimal 1!" << endl;
+        cout << "Stok saat ini : " << stok << endl;
+        cout << "Maks dikurangi: " << stok - 1 << endl;
     }
     else
     {
@@ -246,7 +248,7 @@ void editBarang(char nama[][50], int stok[], int harga[], int total)
 
         if (pil < 1 || pil > total)
         {
-            cout << "[Gagal] Nomor tidak valid!" << endl;
+            cout << "[Gagal] Nomor " << pil << " tidak valid! Pilih antara 1 sampai " << total << "." << endl;
             system("pause");
             continue;
         }
