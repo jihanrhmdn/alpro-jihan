@@ -8,6 +8,10 @@ const int TARIF_PER_HARI = 75000;
 #define MERAH  "\033[31m"
 #define RESET  "\033[0m"
 
+int HARI_SISTEM  = 0;
+int BULAN_SISTEM = 0;
+int TAHUN_SISTEM = 0;
+
 struct TanggalLahir {
     int tanggal;
     int bulan;
@@ -69,7 +73,7 @@ int hitungLamaRawat(TanggalMasuk tanggalMasuk, int tanggalKeluar, int bulanKelua
     return selisih;
 }
 
-// Cek apakah string hanya berisi digit
+// cek apakah string hanya berisi digit
 bool hanyaDigit(const string& s) {
     if (s.empty()) return false;
     for (int i = 0; i < (int)s.size(); i++) {
@@ -88,27 +92,31 @@ int stringKeInt(const string& s) {
 }
 
 // cek apakah nik sudah terdaftar atau belum
-bool nikSudahAda(const string& nikBaru) {
+bool nikSudahAda(const string& nikBaru, string& namaPasien) {
     for (int i = 0; i < totalPasien; i++) {
-        // NIK dianggap duplikat jika NIK-nya sama DAN pasien tersebut belum dipulangkan
         if (daftarPasien[i].nik == nikBaru && !daftarPasien[i].sudahPulang) {
-            return true; 
+            namaPasien = daftarPasien[i].nama;  
+            return true;
         }
     }
     return false;
 }
 
-void tampilMenu() {
-    time_t sekarang = time(0);
-    tm* lt = localtime(&sekarang);
-    int hari  = lt->tm_mday;
-    int bulan = lt->tm_mon + 1;
-    int tahun = lt->tm_year + 1900;
+// Ambil ID baru berdasarkan jumlah pasien keseluruhan (termasuk yang sudah pulang)
+int idBerikutnya() {
+    int maxId = 0;
+    for (int i = 0; i < totalPasien; i++) {
+        if (daftarPasien[i].id > maxId) maxId = daftarPasien[i].id;
+    }
+    return maxId + 1;
+}
 
+void tampilMenu() {
     cout << "=================================================================" << endl;
     cout << "           SISTEM MANAJEMEN RS GAZACARE PLUS                     " << endl;
     cout << "=================================================================" << endl;
-    cout << "                                                Tanggal " << hari << "/" << bulan << "/" << tahun << "     " << endl;
+    cout << "                                                Tanggal "
+         << HARI_SISTEM << "/" << BULAN_SISTEM << "/" << TAHUN_SISTEM << "     " << endl;
     cout << "  [1] Daftarkan Pasien Baru" << endl;
     cout << "  [2] Lihat Semua Pasien" << endl;
     cout << "  [3] Cari Pasien" << endl;
@@ -149,6 +157,84 @@ void tampilPasien(Pasien pasien) {
     cout << "----------------------------------------------------------------" << endl;
 }
 
+void inisialisasiDataDummy() {
+    // Pasien 1
+    daftarPasien[0].id = 1;
+    daftarPasien[0].nik = "F1D02410xxx34567";
+    daftarPasien[0].nama = "Salsabila Nailafahdi";
+    daftarPasien[0].jenisKelamin = 'P';
+    daftarPasien[0].golonganDarah = 'A';
+    daftarPasien[0].noTelp = "88533321xxxx";
+    daftarPasien[0].tanggalLahir = {5, 3, 1998};
+    daftarPasien[0].alamat = {"Jl. Mawar No. 12", "Kebon Jeruk", "Jakarta Barat", "DKI Jakarta", 11530};
+    daftarPasien[0].pesertaBPJS = true;
+    daftarPasien[0].jumlahAlergi = 2;
+    daftarPasien[0].daftarAlergi[0] = {"Aspirin", "Sesak napas"};
+    daftarPasien[0].daftarAlergi[1] = {"Seafood", "Gatal-gatal"};
+    daftarPasien[0].tanggalMasuk = {10, 5, 2026};
+    daftarPasien[0].sudahPulang = false;
+
+    // Pasien 2
+    daftarPasien[1].id = 2;
+    daftarPasien[1].nik = "F1D02410xxx45678";
+    daftarPasien[1].nama = "I Kadek Mahesa Permana Putra";
+    daftarPasien[1].jenisKelamin = 'L';
+    daftarPasien[1].golonganDarah = 'B';
+    daftarPasien[1].noTelp = "88133716xxxx";
+    daftarPasien[1].tanggalLahir = {12, 5, 1985};
+    daftarPasien[1].alamat = {"Jl. Melati No. 7", "Wonokromo", "Surabaya", "Jawa Timur", 60243};
+    daftarPasien[1].pesertaBPJS = false;
+    daftarPasien[1].jumlahAlergi = 0;
+    daftarPasien[1].tanggalMasuk = {10, 5, 2026};
+    daftarPasien[1].sudahPulang = false;
+
+    // Pasien 3
+    daftarPasien[2].id = 3;
+    daftarPasien[2].nik = "F1D02418xxx56789";
+    daftarPasien[2].nama = "Azizurrifki";
+    daftarPasien[2].jenisKelamin = 'L';
+    daftarPasien[2].golonganDarah = 'O';
+    daftarPasien[2].noTelp = "08907590xxxx";
+    daftarPasien[2].tanggalLahir = {20, 7, 1992};
+    daftarPasien[2].alamat = {"Jl. Flamboyan No. 3", "Baciro", "Yogyakarta", "DI Yogyakarta", 55225};
+    daftarPasien[2].pesertaBPJS = true;
+    daftarPasien[2].jumlahAlergi = 1;
+    daftarPasien[2].daftarAlergi[0] = {"Ibuprofen", "Mual dan muntah"};
+    daftarPasien[2].tanggalMasuk = {11, 5, 2026};
+    daftarPasien[2].sudahPulang = false;
+
+    // Pasien 4
+    daftarPasien[3].id = 4;
+    daftarPasien[3].nik = "F1D02410xxx89012";
+    daftarPasien[3].nama = "Rendy Wahyu Islami";
+    daftarPasien[3].jenisKelamin = 'L';
+    daftarPasien[3].golonganDarah = 'B';
+    daftarPasien[3].noTelp = "08234136xxxx";
+    daftarPasien[3].tanggalLahir = {2, 6, 1975};
+    daftarPasien[3].alamat = {"Jl. Pandanaran No. 20", "Mugassari", "Semarang", "Jawa Tengah", 50249};
+    daftarPasien[3].pesertaBPJS = false;
+    daftarPasien[3].jumlahAlergi = 1;
+    daftarPasien[3].daftarAlergi[0] = {"Latex", "Kulit memerah dan gatal"};
+    daftarPasien[3].tanggalMasuk = {18, 5, 2026};
+    daftarPasien[3].sudahPulang = false;
+
+    // Pasien 5
+    daftarPasien[4].id = 5;
+    daftarPasien[4].nik = "F1D02410xxx01234";
+    daftarPasien[4].nama = "Wimar Aryasmarta Prakasa";
+    daftarPasien[4].jenisKelamin = 'L';
+    daftarPasien[4].golonganDarah = 'A';
+    daftarPasien[4].noTelp = "08582966xxxx";
+    daftarPasien[4].tanggalLahir = {26, 6, 1968};
+    daftarPasien[4].alamat = {"Jl. Sam Ratulangi No. 11", "Wenang", "Manado", "Sulawesi Utara", 95111};
+    daftarPasien[4].pesertaBPJS = true;
+    daftarPasien[4].jumlahAlergi = 0;
+    daftarPasien[4].tanggalMasuk = {19, 5, 2026};
+    daftarPasien[4].sudahPulang = false;
+
+    totalPasien = 5;
+}
+
 // MENU 1: DAFTARKAN PASIEN BARU
 void daftarkanPasienBaru() {
     bersihkanLayar();
@@ -167,6 +253,11 @@ void daftarkanPasienBaru() {
     pasienBaru.sudahPulang = false;
     pasienBaru.jumlahAlergi = 0;
 
+    // Tanggal masuk otomatis dari sistem
+    pasienBaru.tanggalMasuk.tanggal = HARI_SISTEM;
+    pasienBaru.tanggalMasuk.bulan   = BULAN_SISTEM;
+    pasienBaru.tanggalMasuk.tahun   = TAHUN_SISTEM;
+
     cout << "NIK (16 digit)     : ";
     cin >> pasienBaru.nik;
     while ((int)pasienBaru.nik.size() != 16) {
@@ -177,11 +268,12 @@ void daftarkanPasienBaru() {
         cin >> pasienBaru.nik;
     }
 
-    if (nikSudahAda(pasienBaru.nik)) {
+    string namaSudahAda = "";
+    if (nikSudahAda(pasienBaru.nik, namaSudahAda)) {
         cout << endl;
-        cout << "Pasien sudah terdaftar sebagai " << pasienBaru.nama << endl;
+        cout << "Pasien sudah terdaftar sebagai " << namaSudahAda << endl;
         tekanEnterUntukLanjut();
-        return; // Menggagalkan dan langsung keluar dari fungsi pendaftaran
+        return; 
     }
 
     cin.ignore();
@@ -325,7 +417,15 @@ void lihatSemuaPasien() {
     cout << "                      DAFTAR PASIEN                            " << endl;
     cout << "================================================================" << endl;
 
-    if (totalPasien == 0) {
+    bool adaPasienAktif = false;
+    for (int i = 0; i < totalPasien; i++) {
+        if (!daftarPasien[i].sudahPulang) {
+            adaPasienAktif = true;
+            break;
+        }
+    }
+
+    if (!adaPasienAktif) {
         cout << "Belum ada pasien terdaftar." << endl;
         tekanEnterUntukLanjut();
         return;
@@ -352,7 +452,11 @@ void cariPasien() {
     cout << "Masukkan nama: ";
     cin.ignore();
     getline(cin, keyword);
-       
+    
+    cout << "================================================================" << endl;
+    cout << endl;
+    cout << "                       DAFTAR PASIEN                           " << endl;
+    cout << "================================================================" << endl;
 
     bool ditemukan = false;
     for (int i = 0; i < totalPasien; i++) {
@@ -420,7 +524,10 @@ void pulangkanPasien() {
 
     Pasien& pasien = daftarPasien[indexDitemukan];
 
-    int tanggalKeluar = 21, bulanKeluar = 5, tahunKeluar = 2026;
+    int tanggalKeluar = HARI_SISTEM;
+    int bulanKeluar   = BULAN_SISTEM;
+    int tahunKeluar   = TAHUN_SISTEM;
+
     int lamaRawat = hitungLamaRawat(pasien.tanggalMasuk, tanggalKeluar, bulanKeluar, tahunKeluar);
     long long totalTagihan = (long long)lamaRawat * TARIF_PER_HARI;
 
@@ -472,6 +579,14 @@ void pulangkanPasien() {
 }
 
 int main() {
+    time_t sekarang = time(0);
+    tm* lt = localtime(&sekarang);
+    HARI_SISTEM  = lt->tm_mday;
+    BULAN_SISTEM = lt->tm_mon + 1;
+    TAHUN_SISTEM = lt->tm_year + 1900;
+
+    inisialisasiDataDummy();
+    
     int pilihan;
     do {
         bersihkanLayar();
@@ -481,7 +596,7 @@ int main() {
         cin >> inputPilihan;
 
         if (!hanyaDigit(inputPilihan)) {
-            cout << MERAH << "[!] Input harus berupa angka." << RESET << endl;
+            cout << MERAH << "[!] Input harus berupa angka...." << RESET << endl;
             tekanEnterUntukLanjut();
             pilihan = -1;
             continue;
@@ -497,11 +612,11 @@ int main() {
             case 0:
                 bersihkanLayar();
                 cout << "Terima kasih! Sistem ditutup." << endl;
-                cout << endl << endl << endl;
+                cout << endl << endl;
                 cout << "------------------------------";
                 break;
             default:
-                cout << "Pilihan tidak valid!" << endl;
+                cout << MERAH << "[!] Pilihan tidak valid!" << RESET << endl;
                 tekanEnterUntukLanjut();
         }
     } while (pilihan != 0);
