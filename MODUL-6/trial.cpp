@@ -324,14 +324,79 @@ void switchRepository() {
     waitEnter();
 }
 
+void printHeader(bool showFull = false) {
+    clearScreen();
+    cout << CYAN << "GITSIM" << RESET << " - Git Simulator\n";
+    if (showFull && activeRepo != nullptr) {
+        int idx = 1;
+        Repository* tmp = repoList;
+        while (tmp && tmp != activeRepo) { idx++; tmp = tmp->next; }
+        cout << GRAY << "Author : " << WHITE << authorName << RESET
+             << GRAY << " | Repo: " << WHITE << activeRepo->name << RESET
+             << GRAY << " | HEAD: " << GREEN << activeRepo->activeBranch->name << RESET
+             << " | [" << idx << "/" << repoCount << "]\n";
+    } else {
+        cout << GRAY << "Author: " << WHITE << authorName << RESET << "\n";
+    }
+}
+
+void showMenu() {
+    printHeader(true);
+    printLine();
+    cout << "[1] git commit\n";
+    cout << "[2] git log\n";
+    cout << "[3] git branch\n";
+    cout << "[4] git checkout\n";
+    cout << "[5] new repository\n";
+    cout << "[6] switch repository\n";
+    cout << "[0] exit\n";
+    printLine();
+    cout << GREEN << "> " << RESET;
+}
+
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         cout << RED << "Usage: ./gitsim <Username>" << RESET << "\n";
         return 1;
     }
     authorName = argv[1];
-    Repository* first = createRepository("my-repo");
+
+    clearScreen();
+    cout << CYAN << "GITSIM" << RESET << " - Lightweight Git Simulator\n";
+    cout << GRAY << "Author: " << WHITE << authorName << RESET << "\n";
+    printLine();
+    cout << "git init\n";
+    printLine();
+
+    cout << CYAN << "Repository name: " << RESET;
+    string rname; getline(cin, rname);
+    if (rname.empty()) rname = "my-repo";
+
+    Repository* first = createRepository(rname);
     appendRepo(first); activeRepo = first;
-    cout << GREEN << "[OK]" << RESET << " multi-repo support ready\n";
+
+    cout << "\n" << GREEN << "[OK]" << RESET << " Initialized empty repository: " << rname << "\n";
+    cout << GRAY << "On branch: " << GREEN << "main" << RESET << "\n\n";
+    waitEnter();
+
+    int choice = -1;
+    while (choice != 0) {
+        showMenu();
+        cin >> choice; cin.clear(); cin.ignore();
+        switch (choice) {
+            case 1: gitCommit();        break;
+            case 2: gitLog();           break;
+            case 3: gitBranch();        break;
+            case 4: gitCheckout();      break;
+            case 5: newRepository();    break;
+            case 6: switchRepository(); break;
+            case 0: break;
+            default:
+                cout << RED << "Invalid option!\n" << RESET;
+                waitEnter();
+        }
+    }
+
+    cout << CYAN << "Session Ended\n" << RESET;
     return 0;
 }
