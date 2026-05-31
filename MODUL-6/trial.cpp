@@ -97,6 +97,12 @@ Branch* findBranch(Repository* repo, const string& name) {
     return nullptr;
 }
 
+Repository* findRepo(const string& name) {
+    Repository* r = repoList;
+    while (r) { if (r->name == name) return r; r = r->next; }
+    return nullptr;
+}
+
 void copyCommits(Branch* dst, Branch* src) {
     if (!src->head) return;
     Commit* arr[1000]; int cnt = 0;
@@ -118,6 +124,14 @@ void appendBranch(Repository* repo, Branch* b) {
     Branch* tmp = repo->branches;
     while (tmp->next) tmp = tmp->next;
     tmp->next = b; repo->branchCount++;
+}
+
+void appendRepo(Repository* r) {
+    repoCount++;
+    if (!repoList) { repoList = r; return; }
+    Repository* tmp = repoList;
+    while (tmp->next) tmp = tmp->next;
+    tmp->next = r;
 }
 
 void gitCommit() {
@@ -252,6 +266,64 @@ void gitCheckout() {
     waitEnter();
 }
 
+void newRepository() {
+    clearScreen();
+    printLine();
+    cout << "git init (new repository)\n";
+    printLine();
+
+    cout << CYAN << "New repository name: " << RESET;
+    string rname; getline(cin, rname);
+
+    if (rname.empty()) rname = "repo-" + to_string(repoCount + 1);
+
+    if (findRepo(rname)) {
+        cout << RED << "[ERROR]" << RESET << " Repository '" << rname << "' already exists!\n";
+        waitEnter(); return;
+    }
+
+    Repository* r = createRepository(rname);
+    appendRepo(r); activeRepo = r;
+    cout << GREEN << "[OK]" << RESET << " Repository '" << rname << "' created and set as active.\n";
+    cout << GRAY << "On branch: " << GREEN << "main" << RESET << "\n";
+    waitEnter();
+}
+
+void switchRepository() {
+    clearScreen();
+    printLine();
+    cout << "switch repository\n";
+    printLine();
+
+    Repository* r = repoList; int idx = 1;
+    while (r) {
+        int cnt = r->activeBranch->commitCount;
+        if (r == activeRepo)
+            cout << GREEN << "* [" << idx << "] " << RESET << r->name
+                 << "  (" << r->branchCount << " branch, " << cnt << " commits at HEAD)\n";
+        else
+            cout << "  [" << idx << "] " << r->name
+                 << "  (" << r->branchCount << " branch, " << cnt << " commits at HEAD)\n";
+        idx++; r = r->next;
+    }
+
+    printLine();
+    cout << CYAN << "Select repository number: " << RESET;
+    int choice; cin >> choice; cin.ignore();
+
+    if (choice < 1 || choice > repoCount) {
+        cout << RED << "[ERROR]" << RESET << " Invalid selection!\n";
+        waitEnter(); return;
+    }
+
+    r = repoList;
+    for (int i = 1; i < choice; i++) r = r->next;
+    activeRepo = r;
+    cout << GREEN << "[OK]" << RESET << " Switched to repository '" << r->name << "'\n";
+    cout << "HEAD: " << GREEN << r->activeBranch->name << RESET << "\n";
+    waitEnter();
+}
+
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         cout << RED << "Usage: ./gitsim <Username>" << RESET << "\n";
@@ -259,7 +331,7 @@ int main(int argc, char* argv[]) {
     }
     authorName = argv[1];
     Repository* first = createRepository("my-repo");
-    repoList = first; activeRepo = first; repoCount = 1;
-    cout << GREEN << "[OK]" << RESET << " branch & checkout ready to test\n";
+    appendRepo(first); activeRepo = first;
+    cout << GREEN << "[OK]" << RESET << " multi-repo support ready\n";
     return 0;
 }
