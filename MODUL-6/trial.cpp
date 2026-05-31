@@ -91,6 +91,35 @@ Repository* createRepository(const string& name) {
     return r;
 }
 
+Branch* findBranch(Repository* repo, const string& name) {
+    Branch* b = repo->branches;
+    while (b) { if (b->name == name) return b; b = b->next; }
+    return nullptr;
+}
+
+void copyCommits(Branch* dst, Branch* src) {
+    if (!src->head) return;
+    Commit* arr[1000]; int cnt = 0;
+    Commit* cur = src->head;
+    while (cur) { arr[cnt++] = cur; cur = cur->next; }
+    for (int i = cnt - 1; i >= 0; i--) {
+        Commit* nc    = new Commit;
+        nc->id         = arr[i]->id;
+        nc->message    = arr[i]->message;
+        nc->author     = arr[i]->author;
+        nc->timestamp  = arr[i]->timestamp;
+        nc->next       = dst->head;
+        dst->head      = nc;
+        dst->commitCount++;
+    }
+}
+
+void appendBranch(Repository* repo, Branch* b) {
+    Branch* tmp = repo->branches;
+    while (tmp->next) tmp = tmp->next;
+    tmp->next = b; repo->branchCount++;
+}
+
 void gitCommit() {
     clearScreen();
     printLine();
@@ -155,6 +184,74 @@ void gitLog() {
     waitEnter();
 }
 
+void gitBranch() {
+    clearScreen();
+    printLine();
+    cout << "git branch\n";
+    printLine();
+
+    Branch* b = activeRepo->branches;
+    while (b) {
+        if (b == activeRepo->activeBranch)
+            cout << GREEN << "* " << RESET << b->name << " (" << b->commitCount << " commits)\n";
+        else
+            cout << "  " << b->name << " (" << b->commitCount << " commits)\n";
+        b = b->next;
+    }
+
+    printLine();
+    cout << CYAN << "New branch name: " << RESET;
+    string newName; getline(cin, newName);
+
+    if (newName.empty()) {
+        cout << RED << "[ERROR]" << RESET << " Branch name cannot be empty!\n";
+        waitEnter(); return;
+    }
+    if (findBranch(activeRepo, newName)) {
+        cout << RED << "[ERROR]" << RESET << " Branch '" << newName << "' already exists!\n";
+        waitEnter(); return;
+    }
+
+    Branch* nb = createBranch(newName);
+    copyCommits(nb, activeRepo->activeBranch);
+    appendBranch(activeRepo, nb);
+
+    cout << GREEN << "[OK]" << RESET << " Branch '" << newName << "' created from '"
+         << activeRepo->activeBranch->name << "'\n";
+    cout << GRAY << nb->commitCount << " commit(s) inherited\n";
+    waitEnter();
+}
+
+void gitCheckout() {
+    clearScreen();
+    printLine();
+    cout << "git checkout\n";
+    printLine();
+
+    Branch* b = activeRepo->branches;
+    while (b) {
+        if (b == activeRepo->activeBranch)
+            cout << GREEN << "* " << RESET << b->name << "\n";
+        else
+            cout << "  " << b->name << "\n";
+        b = b->next;
+    }
+
+    printLine();
+    cout << CYAN << "Switch to branch: " << RESET;
+    string target; getline(cin, target);
+
+    Branch* found = findBranch(activeRepo, target);
+    if (!found || found == activeRepo->activeBranch) {
+        cout << RED << "[ERROR]" << RESET << " Invalid branch!\n";
+        waitEnter(); return;
+    }
+
+    activeRepo->activeBranch = found;
+    cout << GREEN << "[OK]" << RESET << " Switched to branch '" << target << "'\n";
+    waitEnter();
+}
+
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         cout << RED << "Usage: ./gitsim <Username>" << RESET << "\n";
@@ -163,6 +260,6 @@ int main(int argc, char* argv[]) {
     authorName = argv[1];
     Repository* first = createRepository("my-repo");
     repoList = first; activeRepo = first; repoCount = 1;
-    cout << GREEN << "[OK]" << RESET << " test: commit & log ready\n";
+    cout << GREEN << "[OK]" << RESET << " branch & checkout ready to test\n";
     return 0;
 }
