@@ -91,11 +91,78 @@ Repository* createRepository(const string& name) {
     return r;
 }
 
-int main() {
-    cout << CYAN << "GITSIM" << RESET << " - Git Simulator\n";
-    Repository* test = createRepository("test-repo");
-    cout << "Repo created: " << test->name << "\n";
-    delete test->branches;
-    delete test;
+void gitCommit() {
+    clearScreen();
+    printLine();
+    cout << "git commit [" << GREEN << activeRepo->activeBranch->name << RESET << "]\n";
+    printLine();
+
+    cout << CYAN << "Message : " << RESET;
+    string msg;
+    getline(cin, msg);
+
+    if (msg.empty()) {
+        cout << RED << "[ERROR]" << RESET << " Commit message cannot be empty!\n";
+        waitEnter(); return;
+    }
+
+    cout << CYAN << "Push commit? (y/n): " << RESET;
+    char confirm; cin >> confirm; cin.ignore();
+
+    if (confirm != 'y' && confirm != 'Y') {
+        cout << GRAY << "Commit cancelled.\n" << RESET;
+        waitEnter(); return;
+    }
+
+    Commit* c    = new Commit;
+    c->id         = globalCommitId++;
+    c->message    = msg;
+    c->author     = authorName;
+    c->timestamp  = getCurrentTimestamp();
+    c->next       = activeRepo->activeBranch->head;
+    activeRepo->activeBranch->head = c;
+    activeRepo->activeBranch->commitCount++;
+
+    string hash = generateShortHash(c->id);
+    cout << "[" << GREEN << activeRepo->activeBranch->name
+         << " " << hash << RESET << "] " << msg << "\n";
+    printLine();
+    cout << activeRepo->activeBranch->name << " -> origin/" << activeRepo->activeBranch->name << "\n";
+    cout << "$ git push origin " << GREEN << activeRepo->activeBranch->name << RESET << "\n";
+    printLine();
+    waitEnter();
+}
+
+void gitLog() {
+    clearScreen();
+    printLine();
+    cout << "git log  [" << GREEN << activeRepo->activeBranch->name << RESET << "]\n";
+    printLine();
+
+    if (!activeRepo->activeBranch->head) {
+        cout << "(No commits on this branch)\n";
+    } else {
+        Commit* c = activeRepo->activeBranch->head;
+        while (c) {
+            cout << YELLOW << "commit " << generateShortHash(c->id) << RESET << "\n";
+            cout << "Author : " << c->author << "\n";
+            cout << "Date   : " << c->timestamp << "\n";
+            cout << "        " << c->message << "\n\n";
+            c = c->next;
+        }
+    }
+    printLine();
+    waitEnter();
+}
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        cout << RED << "Usage: ./gitsim <Username>" << RESET << "\n";
+        return 1;
+    }
+    authorName = argv[1];
+    Repository* first = createRepository("my-repo");
+    repoList = first; activeRepo = first; repoCount = 1;
+    cout << GREEN << "[OK]" << RESET << " test: commit & log ready\n";
     return 0;
 }
